@@ -2,10 +2,14 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.1'
     id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.openapi.generator' version '7.2.0'
+    id 'org.flywaydb.flyway' version '10.4.1'
 }
 
+apply from: 'api-build.gradle'
+
 group = 'com.example'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1'
 
 java {
     sourceCompatibility = '17'
@@ -15,9 +19,39 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    springVersion = '3.2.1'
+    jjwtVersion = '0.11.5'
+    postgresqlVersion = '42.7.1'
+    flywayVersion = '10.4.1'
+    lombokVersion = '1.18.30'
+    jakartaVersion = '3.0.2'
+}
+
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa:$springVersion"
+    implementation "org.springframework.boot:spring-boot-starter-security:$springVersion"
+    implementation "org.springframework.boot:spring-boot-starter-web:$springVersion"
+    implementation "org.springframework.boot:spring-boot-starter-webflux:$springVersion"
+
+    implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
+    implementation "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
+    implementation "io.jsonwebtoken:jjwt-jackson:$jjwtVersion"
+
+    implementation "org.postgresql:postgresql:$postgresqlVersion"
+    implementation "org.flywaydb:flyway-core:$flywayVersion"
+    implementation "org.flywaydb:flyway-database-postgresql:$flywayVersion"
+
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+
+    implementation "jakarta.validation:jakarta.validation-api:$jakartaVersion"
+    implementation 'org.hibernate:hibernate-validator:8.0.1.Final'
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test:$springVersion"
+
+    testCompileOnly "org.projectlombok:lombok:$lombokVersion"
+    testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
 }
 
 tasks.named('test') {

@@ -1,0 +1,190 @@
+openapi: 3.0.0
+info:
+  title: AuthMicroservice API
+  version: 1.0.0
+paths:
+  /auth/signin:
+    post:
+      summary: Authenticate User
+      description: Endpoint for authenticating a user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'schemas.yaml#/SigninRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas.yaml#/JwtResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example: "Access Denied: User is not exist"
+      tags:
+        - Auth
+  /auth/signup:
+    post:
+      summary: Register User
+      description: Endpoint for registering a new user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'schemas.yaml#/SignupRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example: "User registered successfully"
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              example: "Conflict: Username is already taken"
+      tags:
+        - Auth
+  /auth/signout:
+    post:
+      summary: Logout User
+      description: Endpoint for logging out a user.
+      security:
+        - JWT: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example: "User logged out successfully"
+        '401':
+          description: Unauthorized response
+          content:
+            application/json:
+              example: { "status": "HTTP code",
+                         "error": "Unauthorized",
+                         "message": "Exception message",
+                         "path": "Request path"}
+        '500':
+          description: Something went wrong
+          content:
+            application/json:
+              example: "Internal Server Error"
+      tags:
+        - Auth
+  /auth/refresh:
+    post:
+      summary: Refresh Token
+      description: Endpoint for refreshing an authentication token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'schemas.yaml#/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: 'schemas.yaml#/RefreshTokenResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example: "Token Problem: Refresh token is not in database"
+      tags:
+        - Auth
+  /test/all:
+    get:
+      summary: Public Content
+      description: Publicly accessible content.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example: "Public Content."
+      tags:
+        - Test
+  /test/user:
+    get:
+      summary: User Content
+      description: Content accessible to users.
+      security:
+        - JWT: []
+        - roles: ["USER"]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example: "User Content."
+        '401':
+          description: Unauthorized response
+          content:
+            application/json:
+              example: { "status": "HTTP code",
+                         "error": "Unauthorized",
+                         "message": "Exception message",
+                         "path": "Request path"}
+      tags:
+        - Test
+  /test/moderator:
+    get:
+      summary: Moderator Board
+      description: Content accessible to moderators.
+      security:
+        - JWT: []
+        - roles: ["MODERATOR"]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example: "Moderator Board."
+        '401':
+          description: Unauthorized response
+          content:
+            application/json:
+              example: { "status": "HTTP code",
+                         "error": "Unauthorized",
+                         "message": "Exception message",
+                         "path": "Request path"}
+      tags:
+        - Test
+  /test/admin:
+    get:
+      summary: Admin Board
+      description: Content accessible to administrators.
+      security:
+        - JWT: []
+        - roles: ["ADMIN"]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example: "Admin Board."
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example: { "status": "HTTP code",
+                         "error": "Unauthorized",
+                         "message": "Exception message",
+                         "path": "Request path"}
+      tags:
+        - Test
+components:
+  securitySchemes:
+    JWT:
+      type: apiKey
+      in: header
+      name: Authorization

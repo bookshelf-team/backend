@@ -1,0 +1,29 @@
+import org.codehaus.groovy.runtime.GStringImpl
+
+ext {
+    openapiInputSpec = "${rootDir}/api/open-api.yaml" as GStringImpl
+    openapiGenConfig = "${rootDir}/api/gen-config.yaml" as GStringImpl
+    templateDirectory = "${rootDir}/api/custom-template" as GStringImpl
+}
+
+dependencies {
+    implementation 'io.swagger.core.v3:swagger-annotations:2.2.15'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+}
+
+openApiValidate {
+    inputSpec = "$openapiInputSpec"
+}
+
+openApiGenerate {
+    inputSpec = "$openapiInputSpec"
+    outputDir = "${rootDir}/build/generated"
+    configFile = "$openapiGenConfig"
+    templateDir = "$templateDirectory"
+}
+
+sourceSets.main {
+    java.srcDir("${rootDir}/build/generated/src/main/java")
+}
+
+compileJava.dependsOn "openApiGenerate"

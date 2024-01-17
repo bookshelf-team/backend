@@ -1,0 +1,41 @@
+version: "3.3"
+
+services:
+  bookshelf:
+    env_file:
+      - .env
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: bookshelf
+    container_name: bookshelf
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_PORT=8080
+      - AUTO_OFFSET_RESET=earliest
+      - DB_URL=jdbc:postgresql://postgres:5432/bookshelf
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DRIVER=org.postgresql.Driver
+    depends_on:
+      - postgres
+    networks:
+      - bookshelf
+
+  postgres:
+    restart: always
+    image: postgres:15.2
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=bookshelf
+    networks:
+      - bookshelf
+
+networks:
+  bookshelf:
+    driver: bridge

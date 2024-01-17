@@ -1,0 +1,14 @@
+generatorName: spring
+library: spring-boot
+additionalProperties:
+  useSpringBoot3: true
+  useTags: true
+  interfaceOnly: true
+  openApiNullable: false
+  useOptional: false
+  hideGenerationTimestamp: true
+  camelCaseDollarSign: true
+  unhandledException: true
+#  modelNameSuffix: 'Dto'
+  booleanGetterPrefix: 'is'
+  implicitHeaders: true

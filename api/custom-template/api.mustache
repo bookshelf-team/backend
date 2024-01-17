@@ -1,0 +1,84 @@
+package {{package}};
+
+{{#imports}}import {{import}};
+{{/imports}}
+{{#swagger2AnnotationLibrary}}
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+{{/swagger2AnnotationLibrary}}
+{{#jdk8-no-delegate}}
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+{{/jdk8-no-delegate}}
+{{#useBeanValidation}}
+import org.springframework.validation.annotation.Validated;
+{{/useBeanValidation}}
+{{#useSpringController}}
+import org.springframework.stereotype.Controller;
+{{/useSpringController}}
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+{{#useBeanValidation}}
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+{{/useBeanValidation}}
+
+import java.util.List;
+import java.util.Map;
+
+
+{{#swagger2AnnotationLibrary}}
+@Tag(name = "{{tagName}}", description = {{#tagDescription}}"{{{.}}}"{{/tagDescription}}{{^tagDescription}}"the {{tagName}} API"{{/tagDescription}})
+{{/swagger2AnnotationLibrary}}
+{{#operations}}
+public interface {{classname}} {
+    {{#operation}}
+    {{#isDeprecated}}
+    @Deprecated
+    {{/isDeprecated}}
+    {{#swagger2AnnotationLibrary}}
+    @Operation(
+            {{#vendorExtensions.x-tags.size}}
+            tags = { {{#vendorExtensions.x-tags}}"{{tag}}"{{^-last}}, {{/-last}}{{/vendorExtensions.x-tags}} },
+            {{/vendorExtensions.x-tags.size}}
+            {{#summary}}
+            summary = "{{{.}}}",
+            {{/summary}}
+            operationId = "{{{operationId}}}",
+            {{#notes}}
+            description = "{{{.}}}",
+            {{/notes}}
+            responses = {
+            {{#responses}}
+                    @ApiResponse(responseCode = {{#isDefault}}"default"{{/isDefault}}{{^isDefault}}"{{{code}}}"{{/isDefault}}, description = "{{{message}}}"{{#baseType}}, content = {
+                            {{#produces}}
+                            @Content(mediaType = "{{{mediaType}}}", {{#isArray}}array = @ArraySchema({{/isArray}}schema = @Schema(implementation = {{{baseType}}}.class){{#isArray}}){{/isArray}}){{^-last}},{{/-last}}
+                            {{/produces}}
+                    }{{/baseType}}){{^-last}},{{/-last}}
+            {{/responses}}
+            })
+        {{/swagger2AnnotationLibrary}}
+    @RequestMapping(
+            method = RequestMethod.{{httpMethod}},
+            value = "{{{path}}}"{{#singleContentTypes}}{{#hasProduces}},
+            produces = "{{{vendorExtensions.x-accepts}}}"{{/hasProduces}}{{#hasConsumes}},
+            consumes = "{{{vendorExtensions.x-content-type}}}"{{/hasConsumes}}{{/singleContentTypes}}{{^singleContentTypes}}{{#hasProduces}},
+            produces = { {{#produces}}"{{{mediaType}}}"{{^-last}}, {{/-last}}{{/produces}} }{{/hasProduces}}{{#hasConsumes}},
+            consumes = { {{#consumes}}"{{{mediaType}}}"{{^-last}}, {{/-last}}{{/consumes}} }{{/hasConsumes}}{{/singleContentTypes}}
+    )
+    {{>returnTypes}} {{operationId}}(
+        {{#allParams}}{{>queryParams}}{{>pathParams}}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{>cookieParams}}{{^-last}},
+        {{/-last}}{{/allParams}}{{#vendorExtensions.x-spring-paginated}}{{#hasParams}},{{/hasParams}}{{#springFoxDocumentationProvider}}@ApiIgnore {{/springFoxDocumentationProvider}}{{#springDocDocumentationProvider}}@ParameterObject {{/springDocDocumentationProvider}}final Pageable pageable{{/vendorExtensions.x-spring-paginated}}){{#unhandledException}} throws Exception{{/unhandledException}};
+
+    {{/operation}}
+}
+{{/operations}}
