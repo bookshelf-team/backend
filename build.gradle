@@ -6,8 +6,6 @@ plugins {
     id 'org.flywaydb.flyway' version '10.4.1'
 }
 
-apply from: 'api-build.gradle'
-
 group = 'com.example'
 version = '0.0.1'
 
@@ -48,12 +46,14 @@ dependencies {
     implementation "jakarta.validation:jakarta.validation-api:$jakartaVersion"
     implementation 'org.hibernate:hibernate-validator:8.0.1.Final'
 
-    testImplementation "org.springframework.boot:spring-boot-starter-test:$springVersion"
-
     testCompileOnly "org.projectlombok:lombok:$lombokVersion"
     testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'com.example.Application'
+        )
+    }
 }
