@@ -7,7 +7,9 @@ CREATE TABLE IF NOT EXISTS users (
                                      id SERIAL PRIMARY KEY,
                                      username VARCHAR(20) NOT NULL,
                                      email VARCHAR(50) NOT NULL,
-                                     password VARCHAR(255) NOT NULL
+                                     password VARCHAR(120) NOT NULL,
+                                     register_date VARCHAR(120) NOT NULL,
+                                     last_login VARCHAR(120) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS user_roles (
