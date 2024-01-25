@@ -17,6 +17,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "relation_types")
 public class BookRelationType extends BaseEntity {
+
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private EBookRelationType name;

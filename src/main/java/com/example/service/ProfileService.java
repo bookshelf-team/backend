@@ -1,21 +1,26 @@
 package com.example.service;
 
 import com.example.model.Book;
-import com.example.model.BookRelationType;
 import com.example.model.Profile;
 import com.example.model.User;
 import com.example.model.ProfileBookRelation;
+import com.example.model.EBookRelationType;
+import com.example.payload.request.BookToProfileRelationRequest;
 import com.example.repository.UserRepository;
 import com.example.repository.BookRepository;
 import com.example.repository.ProfileRepository;
 import com.example.repository.ProfileBookRelationRepository;
+import com.example.repository.BookRelationTypeRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -29,32 +34,49 @@ public class ProfileService {
 
     private final ProfileBookRelationRepository profileBookRelationRepository;
 
-    @Transactional
-    public Profile updateProfile(String username, Profile updatedProfile) {
-        Optional<User> optionalUser = userRepository.findByUsername(username);
-        if (optionalUser.isPresent()) {
-            Profile profile = optionalUser.get().getProfile();
-            BeanUtils.copyProperties(updatedProfile, profile, "id", "profileBookRelations");
-            return profileRepository.save(profile);
-        } else {
-            throw new NoSuchElementException("User is not exist");
-        }
+    private final BookRelationTypeRepository bookRelationTypeRepository;
+
+    private final Validator validator;
+
+    public Profile getProfileByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User is not exist"));
+        return user.getProfile();
     }
 
     @Transactional
-    public void addBookToProfile(String username, Long bookId, BookRelationType relationType) {
-        Optional<User> optionalUser = userRepository.findByUsername(username);
-        if (optionalUser.isPresent()) {
-            Profile profile = optionalUser.get().getProfile();
-            Optional<Book> optionalBook = bookRepository.findById(bookId);
-            if (optionalBook.isPresent()) {
-                ProfileBookRelation relation = new ProfileBookRelation(profile, optionalBook.get(), relationType);
-                profileBookRelationRepository.save(relation);
-            } else {
-                throw new NoSuchElementException("Book is not exist");
-            }
-        } else {
-            throw new NoSuchElementException("User is not exist");
+    public Profile updateProfileByUsername(String username, Profile updatedProfile) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User is not exist"));
+
+        Profile profile = user.getProfile();
+
+        BeanUtils.copyProperties(updatedProfile, profile, "id", "profileBookRelations");
+        return profileRepository.save(profile);
+    }
+
+    @Transactional
+    public String addBookToProfile(BookToProfileRelationRequest bookToProfileRelationRequest) {
+        Set<ConstraintViolation<BookToProfileRelationRequest>> violations = validator.validate(bookToProfileRelationRequest);
+        if (!violations.isEmpty()) {
+            throw new IllegalArgumentException(violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(", ")));
         }
+
+        User user = userRepository.findByUsername(bookToProfileRelationRequest.getUsername())
+                .orElseThrow(() -> new NoSuchElementException("User is not exist"));
+
+        Profile profile = user.getProfile();
+
+        Book book = bookRepository.findById(bookToProfileRelationRequest.getBookId())
+                .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
+
+        ProfileBookRelation relation = new ProfileBookRelation(profile, book,
+                bookRelationTypeRepository.findByName(EBookRelationType.valueOf("TYPE_"
+                                + bookToProfileRelationRequest.getRelationType().toUpperCase()))
+                        .orElseThrow(() -> new NoSuchElementException("Book relation type is not exist")));
+        profileBookRelationRepository.save(relation);
+        return "Book added to profile successfully";
     }
 }

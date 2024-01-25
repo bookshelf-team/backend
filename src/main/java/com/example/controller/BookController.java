@@ -3,9 +3,12 @@ package com.example.controller;
 import com.example.model.Book;
 import com.example.service.BookService;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -13,29 +16,27 @@ import java.util.List;
 @RestController
 @RequestMapping("/book")
 @AllArgsConstructor
-
 public class BookController {
 
-    public BookController(BookService bookService) {
-    }
+    private final BookService bookService;
 
     @GetMapping("/all")
-    public ResponseEntity<List<Book>> getAllBooks() {
+    public List<Book> getAllBooks() {
         return null;
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getBookById(@PathVariable Long id) {
+    public Book getBookById(@PathVariable Long id) {
         return null;
     }
 
     @GetMapping("/search/title")
-    public ResponseEntity<List<Book>> getBooksByTitle(@RequestParam String title) {
+    public List<Book> getBooksByTitle(@RequestParam String title) {
         return null;
     }
 
     @GetMapping("/search/author")
-    public ResponseEntity<List<Book>> getBooksByAuthor(@RequestParam String author) {
+    public List<Book> getBooksByAuthor(@RequestParam String author) {
         return null;
     }
 }

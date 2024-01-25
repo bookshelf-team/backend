@@ -11,16 +11,17 @@ import java.util.Set;
 @Getter
 @Setter
 public class SignupRequest {
-    @NotBlank(message = "Username cannot be null")
+    @NotBlank(message = "Username cannot be blank")
     @Size(min = 3, max = 20)
     private String username;
 
+    @NotBlank(message = "Email cannot be blank")
     @Email(message = "Email should be valid")
     private String email;
 
     private Set<String> role;
 
-    @NotBlank(message = "Password cannot be null")
+    @NotBlank(message = "Password cannot be blank")
     @Size(min = 6, max = 40, message = "Password must be between 6 and 40 characters")
     private String password;
 }
