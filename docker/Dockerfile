@@ -7,4 +7,4 @@ RUN gradle build
 FROM openjdk:21
 COPY --from=build /app/build /app/build
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","app/build/libs/backend-0.0.1.jar"]
+ENTRYPOINT ["java","-jar","app/build/libs/bookshelf-0.0.1.jar"]

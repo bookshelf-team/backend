@@ -15,9 +15,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "roles")
-public class Role extends BaseEntity {
+@Table(name = "relation_types")
+public class BookRelationType extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private ERole name;
+    private EBookRelationType name;
 }
