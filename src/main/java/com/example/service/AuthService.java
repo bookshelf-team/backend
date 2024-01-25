@@ -2,10 +2,11 @@ package com.example.service;
 
 import com.example.exception.ConflictException;
 import com.example.exception.TokenException;
+import com.example.model.User;
+import com.example.model.Profile;
+import com.example.model.Role;
 import com.example.model.ERole;
 import com.example.model.RefreshToken;
-import com.example.model.Role;
-import com.example.model.User;
 import com.example.payload.request.RefreshTokenRequest;
 import com.example.payload.request.SigninRequest;
 import com.example.payload.request.SignupRequest;
@@ -13,14 +14,15 @@ import com.example.payload.response.JwtResponse;
 import com.example.payload.response.RefreshTokenResponse;
 import com.example.repository.RoleRepository;
 import com.example.repository.UserRepository;
+import com.example.repository.ProfileRepository;
 import com.example.security.jwt.JwtUtils;
 import com.example.security.model.UserDetailsImpl;
 import com.example.security.service.RefreshTokenService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.AllArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -45,6 +47,8 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     private final UserRepository userRepository;
+
+    private final ProfileRepository profileRepository;
 
     private final RoleRepository roleRepository;
 
@@ -98,7 +102,7 @@ public class AuthService {
                     userDetails.getEmail(),
                     roles);
         } else {
-            throw new AccessDeniedException("User is not exist");
+            throw new BadCredentialsException("User is not exist");
         }
     }
 
@@ -123,6 +127,10 @@ public class AuthService {
                 signUpRequest.getEmail(),
                 encoder.encode(signUpRequest.getPassword()),
                 getTimeStamp());
+
+        Profile profile = new Profile();
+        profileRepository.save(profile);
+        user.setProfile(profile);
 
         Set<String> strRoles = signUpRequest.getRole();
         Set<Role> roles = new HashSet<>();

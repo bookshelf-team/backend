@@ -1,11 +1,13 @@
 package com.example.service;
 
 import com.example.repository.BookRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@AllArgsConstructor
 @Service
 public class BookService {
-    public BookService(BookRepository bookRepository) {
 
-    }
+    private final BookRepository bookRepository;
+
 }
