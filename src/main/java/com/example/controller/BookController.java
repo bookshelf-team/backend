@@ -39,4 +39,10 @@ public class BookController {
     public List<Book> getBooksByAuthor(@RequestParam String author) {
         return null;
     }
+
+    @GetMapping("/search/genre")
+    public List<Book> getBooksByGenre(@RequestParam String genre) {
+        return null;
+    }
+
 }
