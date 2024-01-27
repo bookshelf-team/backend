@@ -57,7 +57,8 @@ public class ProfileService {
 
     @Transactional
     public String addBookToProfile(BookToProfileRelationRequest bookToProfileRelationRequest) {
-        Set<ConstraintViolation<BookToProfileRelationRequest>> violations = validator.validate(bookToProfileRelationRequest);
+        Set<ConstraintViolation<BookToProfileRelationRequest>> violations =
+                validator.validate(bookToProfileRelationRequest);
         if (!violations.isEmpty()) {
             throw new IllegalArgumentException(violations.stream()
                     .map(ConstraintViolation::getMessage)
