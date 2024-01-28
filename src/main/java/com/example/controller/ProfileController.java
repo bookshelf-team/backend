@@ -33,7 +33,7 @@ public class ProfileController {
     }
 
     @PreAuthorize("(#bookToProfileRelationRequest.username == authentication.name and hasRole('USER')) or hasRole('MODERATOR') or hasRole('ADMIN')")
-    @PostMapping
+    @PostMapping("/add/book")
     public String addBookToProfile(@RequestBody BookToProfileRelationRequest bookToProfileRelationRequest) {
         return profileService.addBookToProfile(bookToProfileRelationRequest);
     }

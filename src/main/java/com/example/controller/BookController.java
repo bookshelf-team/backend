@@ -30,8 +30,8 @@ public class BookController {
         return bookService.getBookById(id);
     }
 
-    @GetMapping("/{isbn}")
-    public Book getBookByIsbn(@PathVariable String isbn) {
+    @GetMapping("/search/isbn")
+    public Book getBookByIsbn(@RequestParam String isbn) {
         return bookService.getBookByIsbn(isbn);
     }
 

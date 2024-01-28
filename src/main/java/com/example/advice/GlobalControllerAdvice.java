@@ -10,6 +10,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -20,11 +21,18 @@ public class GlobalControllerAdvice {
 
     private String message;
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleException(Exception e) {
-        message = e.getMessage();
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<String> handleException(Exception e) {
+//        message = e.getMessage();
+//        logException();
+//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal Server Error");
+//    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<String> handleNoHandlerFoundException(HttpMediaTypeNotSupportedException e) {
+        message = String.format("Resource Not Found: %s", e.getMessage());
         logException();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal Server Error");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
     }
 
     @ExceptionHandler(BadCredentialsException.class)

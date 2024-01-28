@@ -45,7 +45,8 @@ public class BookService {
 
     public List<Book> getBooksByGenre(String genreName) {
         Genre genre = genreRepository.findByName(EGenre.valueOf("GENRE_" + genreName.toUpperCase()))
-                .orElseThrow(() -> new NoSuchElementException("Genre is not found: " + genreName));
+                .orElseThrow(() -> new NoSuchElementException("Genre is not found: " +
+                        "GENRE_" + genreName.toUpperCase()));
 
         return bookRepository.findByGenre(genre);
     }

@@ -70,7 +70,7 @@ public class ProfileService {
 
         Profile profile = user.getProfile();
 
-        Book book = bookRepository.findById(bookToProfileRelationRequest.getBookId())
+        Book book = bookRepository.findById((bookToProfileRelationRequest.getBookId()))
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
 
         ProfileBookRelation relation = new ProfileBookRelation(profile, book,

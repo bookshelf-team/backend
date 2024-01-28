@@ -93,7 +93,6 @@ public class AuthService {
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
 
-            refreshTokenService.deleteByUserId(userDetails.getId());
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUsername());
 
             return new JwtResponse(jwtToken,

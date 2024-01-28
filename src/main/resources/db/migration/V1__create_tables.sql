@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS relation_types (
     name VARCHAR(20) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS categories (
+CREATE TABLE IF NOT EXISTS genres (
     id SERIAL PRIMARY KEY,
     name VARCHAR(30) NOT NULL
 );
@@ -27,31 +27,31 @@ $do$
                                                    ('TYPE_READ'),
                                                    ('TYPE_TO_READ');
         END IF;
-        IF NOT EXISTS (SELECT FROM categories) THEN
-            INSERT INTO categories(name) VALUES('CATEGORY_FANTASY'),
-                                               ('CATEGORY_ADVENTURE'),
-                                               ('CATEGORY_ROMANCE'),
-                                               ('CATEGORY_CONTEMPORARY'),
-                                               ('CATEGORY_DYSTOPIAN'),
-                                               ('CATEGORY_MYSTERY'),
-                                               ('CATEGORY_HORROR'),
-                                               ('CATEGORY_THRILLER'),
-                                               ('CATEGORY_PARANORMAL'),
-                                               ('CATEGORY_HISTORICAL_FICTION'),
-                                               ('CATEGORY_SCIENCE_FICTION'),
-                                               ('CATEGORY_CHILDREN'),
-                                               ('CATEGORY_MEMOIR'),
-                                               ('CATEGORY_COOKBOOK'),
-                                               ('CATEGORY_ART'),
-                                               ('CATEGORY_SELF_HELP'),
-                                               ('CATEGORY_PERSONAL_DEVELOPMENT'),
-                                               ('CATEGORY_MOTIVATIONAL'),
-                                               ('CATEGORY_HEALTH'),
-                                               ('CATEGORY_HISTORY'),
-                                               ('CATEGORY_TRAVEL'),
-                                               ('CATEGORY_GUIDE'),
-                                               ('CATEGORY_RELATIONSHIPS'),
-                                               ('CATEGORY_HUMOR');
+        IF NOT EXISTS (SELECT FROM genres) THEN
+            INSERT INTO genres(name) VALUES('GENRE_FANTASY'),
+                                           ('GENRE_ADVENTURE'),
+                                           ('GENRE_ROMANCE'),
+                                           ('GENRE_CONTEMPORARY'),
+                                           ('GENRE_DYSTOPIAN'),
+                                           ('GENRE_MYSTERY'),
+                                           ('GENRE_HORROR'),
+                                           ('GENRE_THRILLER'),
+                                           ('GENRE_PARANORMAL'),
+                                           ('GENRE_HISTORICAL_FICTION'),
+                                           ('GENRE_SCIENCE_FICTION'),
+                                           ('GENRE_CHILDREN'),
+                                           ('GENRE_MEMOIR'),
+                                           ('GENRE_COOKBOOK'),
+                                           ('GENRE_ART'),
+                                           ('GENRE_SELF_HELP'),
+                                           ('GENRE_PERSONAL_DEVELOPMENT'),
+                                           ('GENRE_MOTIVATIONAL'),
+                                           ('GENRE_HEALTH'),
+                                           ('GENRE_HISTORY'),
+                                           ('GENRE_TRAVEL'),
+                                           ('GENRE_GUIDE'),
+                                           ('GENRE_RELATIONSHIPS'),
+                                           ('GENRE_HUMOR');
         END IF;
     END
 $do$

@@ -36,6 +36,7 @@ public class RefreshTokenService {
 
     public RefreshToken createRefreshToken(String username) {
         User user = userRepository.findByUsername(username).orElseThrow();
+        refreshTokenRepository.deleteByUserId(user.getId());
 
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(user);
