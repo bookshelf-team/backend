@@ -5,8 +5,13 @@ import com.example.model.*;
 import com.example.payload.request.BookRequest;
 import com.example.repository.BookRepository;
 import com.example.repository.GenreRepository;
+import com.example.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +27,8 @@ public class BookService {
     private final BookRepository bookRepository;
 
     private final GenreRepository genreRepository;
+
+    private final UserRepository userRepository;
 
     public List<Book> getAllBooks() {
         return bookRepository.findAll();
@@ -57,20 +64,30 @@ public class BookService {
 
     @Transactional
     public String addBook(BookRequest bookRequest) {
+        User user = userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new NoSuchElementException("User from token is not exist"));
+
         if (bookRepository.existsByIsbn(bookRequest.getIsbn())) {
             throw new ConflictException("ISBN is already taken");
         }
 
         Book bookToSave = new Book();
         copyBookProperties(bookRequest, bookToSave);
+        bookToSave.setAddedByUser(user);
         bookRepository.save(bookToSave);
         return "Book added successfully";
     }
 
     @Transactional
     public Book updateBookById(Long id, BookRequest bookRequest) {
+        User user = getUserFromSecurityContext(SecurityContextHolder.getContext());
+
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
+
+        if (!book.getAddedByUser().equals(user) && getUserRoles(SecurityContextHolder.getContext()).contains("USER")) {
+            throw new AccessDeniedException("User doesn't have access to update this book");
+        }
 
         if (!book.getIsbn().equals(bookRequest.getIsbn()) && bookRepository.existsByIsbn(bookRequest.getIsbn())) {
             throw new ConflictException("ISBN is already taken");
@@ -82,8 +99,14 @@ public class BookService {
 
     @Transactional
     public Book updateBookByIsbn(String isbn, BookRequest bookRequest) {
+        User user = getUserFromSecurityContext(SecurityContextHolder.getContext());
+
         Book book = bookRepository.findByIsbn(isbn)
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
+
+        if (!book.getAddedByUser().equals(user) && getUserRoles(SecurityContextHolder.getContext()).contains("USER")) {
+            throw new AccessDeniedException("User doesn't have access to update this book");
+        }
 
         if (!book.getIsbn().equals(bookRequest.getIsbn()) && bookRepository.existsByIsbn(bookRequest.getIsbn())) {
             throw new ConflictException("ISBN is already taken");
@@ -95,8 +118,13 @@ public class BookService {
 
     @Transactional
     public String deleteBookById(Long id) {
-        if (!bookRepository.existsById(id)) {
-            throw new NoSuchElementException("Book is not exist");
+        User user = getUserFromSecurityContext(SecurityContextHolder.getContext());
+
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
+
+        if (!book.getAddedByUser().equals(user) && getUserRoles(SecurityContextHolder.getContext()).contains("ROLE_USER")) {
+            throw new AccessDeniedException("User doesn't have access to update this book");
         }
 
         bookRepository.deleteById(id);
@@ -105,15 +133,30 @@ public class BookService {
 
     @Transactional
     public String deleteBookByIsbn(String isbn) {
-        if (!bookRepository.existsByIsbn(isbn)) {
-            throw new NoSuchElementException("Book is not exist");
+        User user = getUserFromSecurityContext(SecurityContextHolder.getContext());
+
+        Book book = bookRepository.findByIsbn(isbn)
+                .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
+
+        if (!book.getAddedByUser().equals(user) && getUserRoles(SecurityContextHolder.getContext()).contains("USER")) {
+            throw new AccessDeniedException("User doesn't have access to update this book");
         }
 
         bookRepository.deleteByIsbn(isbn);
         return "Book deleted successfully";
     }
 
+    private User getUserFromSecurityContext(SecurityContext context) {
+        return userRepository.findByUsername(context.getAuthentication().getName())
+                .orElseThrow(() -> new NoSuchElementException("User from token is not exist"));
+    }
 
+    public List<String> getUserRoles(SecurityContext context) {
+        return context.getAuthentication().getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+    }
 
     private void copyBookProperties(BookRequest bookRequest, Book book) {
         BeanUtils.copyProperties(bookRequest, book, "id", "genres", "profileBookRelations");
