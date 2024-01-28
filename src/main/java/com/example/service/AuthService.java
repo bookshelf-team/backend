@@ -7,6 +7,7 @@ import com.example.model.Profile;
 import com.example.model.Role;
 import com.example.model.ERole;
 import com.example.model.RefreshToken;
+import com.example.payload.request.ChangePasswordRequest;
 import com.example.payload.request.RefreshTokenRequest;
 import com.example.payload.request.SigninRequest;
 import com.example.payload.request.SignupRequest;
@@ -203,6 +204,35 @@ public class AuthService {
                 })
                 .orElseThrow(() -> new TokenException(requestRefreshToken,
                         "Refresh token is not in database"));
+    }
+
+    @Transactional
+    public String changePassword(ChangePasswordRequest changePasswordRequest) {
+        Set<ConstraintViolation<ChangePasswordRequest>> violations = validator.validate(changePasswordRequest);
+        if (!violations.isEmpty()) {
+            throw new IllegalArgumentException(violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(", ")));
+        }
+
+        String username = changePasswordRequest.getUsername();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User is not found"));
+
+        String oldPassword = changePasswordRequest.getOldPassword();
+        String newPassword = changePasswordRequest.getNewPassword();
+
+        if (oldPassword.equals(newPassword)) {
+            throw new IllegalArgumentException("New password is equal to the old one");
+        }
+
+        if (!encoder.matches(oldPassword, user.getPassword())) {
+            throw new BadCredentialsException("Old password doesn't match");
+        }
+
+        userRepository.updatePassword(encoder.encode(newPassword), username);
+        return "Password changed successfully";
     }
 
     private String getTimeStamp() {

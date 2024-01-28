@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import com.example.payload.request.ChangePasswordRequest;
 import com.example.payload.request.RefreshTokenRequest;
 import com.example.payload.request.SigninRequest;
 import com.example.payload.request.SignupRequest;
@@ -42,7 +43,13 @@ public class AuthController {
 
     @PreAuthorize("permitAll()")
     @PostMapping("/refresh")
-    public RefreshTokenResponse refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
-        return authService.refreshToken(request);
+    public RefreshTokenResponse refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
+        return authService.refreshToken(refreshTokenRequest);
+    }
+
+    @PreAuthorize("(#changePasswordRequest.username == authentication.name and hasRole('USER')) or hasRole('ADMIN')")
+    @PostMapping("/password/change")
+    public String changePassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+        return authService.changePassword(changePasswordRequest);
     }
 }

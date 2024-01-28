@@ -36,12 +36,15 @@ public class Book extends BaseEntity {
     @Size(max = 1000)
     private String description;
 
+    @NotBlank
+    @Size(max = 2024)
     private int publicationYear;
 
+    @NotBlank
+    @Size(max = 20)
     private String isbn;
 
-    private String genre;
-
+    @NotBlank
     private int pageCount;
 
     private String coverImageUrl;
@@ -49,12 +52,11 @@ public class Book extends BaseEntity {
     private String diskImageUrl;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(  name = "book_categories",
+    @JoinTable(  name = "book_genres",
             joinColumns = @JoinColumn(name = "book_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id"))
-    private Set<Category> categories = new HashSet<>();
+            inverseJoinColumns = @JoinColumn(name = "genre_id"))
+    private Set<Genre> genre = new HashSet<>();
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProfileBookRelation> profileBookRelations = new HashSet<>();
 }
-

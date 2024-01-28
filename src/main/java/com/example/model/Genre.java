@@ -15,9 +15,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "categories")
-public class Category extends BaseEntity {
+@Table(name = "genres")
+public class Genre extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(length = 30)
-    private ECategory name;
+    private EGenre name;
 }

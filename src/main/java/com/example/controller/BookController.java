@@ -22,27 +22,31 @@ public class BookController {
 
     @GetMapping("/all")
     public List<Book> getAllBooks() {
-        return null;
+        return bookService.getAllBooks();
     }
 
     @GetMapping("/{id}")
     public Book getBookById(@PathVariable Long id) {
-        return null;
+        return bookService.getBookById(id);
+    }
+
+    @GetMapping("/{isbn}")
+    public Book getBookByIsbn(@PathVariable String isbn) {
+        return bookService.getBookByIsbn(isbn);
     }
 
     @GetMapping("/search/title")
     public List<Book> getBooksByTitle(@RequestParam String title) {
-        return null;
+        return bookService.getBooksByTitle(title);
     }
 
     @GetMapping("/search/author")
     public List<Book> getBooksByAuthor(@RequestParam String author) {
-        return null;
+        return bookService.getBooksByAuthor(author);
     }
 
     @GetMapping("/search/genre")
     public List<Book> getBooksByGenre(@RequestParam String genre) {
-        return null;
+        return bookService.getBooksByGenre(genre);
     }
-
 }
