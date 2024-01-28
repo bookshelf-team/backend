@@ -25,6 +25,14 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Optional<List<Book>> findByAuthor(String author);
 
-    @Query("SELECT DISTINCT b FROM Book b JOIN b.genre g WHERE g = :genre")
+    @Query("SELECT DISTINCT b FROM Book b JOIN b.genres g WHERE g = :genre")
     List<Book> findByGenre(Genre genre);
+
+    boolean existsById(@NotNull Long id);
+
+    void deleteById(@NotNull Long id);
+
+    boolean existsByIsbn(String isbn);
+
+    void deleteByIsbn(@NotNull String sbn);
 }

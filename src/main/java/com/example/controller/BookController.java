@@ -1,14 +1,10 @@
 package com.example.controller;
 
 import com.example.model.Book;
+import com.example.payload.request.BookRequest;
 import com.example.service.BookService;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -48,5 +44,30 @@ public class BookController {
     @GetMapping("/search/genre")
     public List<Book> getBooksByGenre(@RequestParam String genre) {
         return bookService.getBooksByGenre(genre);
+    }
+
+    @PostMapping("/add")
+    public String addBook(@RequestBody BookRequest bookRequest) {
+        return bookService.addBook(bookRequest);
+    }
+
+    @PostMapping("/id")
+    public Book updateBookById(@RequestParam Long id, @RequestBody BookRequest bookRequest) {
+        return bookService.updateBookById(id, bookRequest);
+    }
+
+    @PostMapping("/isbn")
+    public Book updateBookByIsbn(@RequestParam String isbn, @RequestBody BookRequest bookRequest) {
+        return bookService.updateBookByIsbn(isbn, bookRequest);
+    }
+
+    @DeleteMapping("/delete/id")
+    public String deleteBookById(@RequestParam Long id) {
+        return bookService.deleteBookById(id);
+    }
+
+    @DeleteMapping("/delete/isbn")
+    public String deleteBookByIsbn(@RequestParam String isbn) {
+        return bookService.deleteBookByIsbn(isbn);
     }
 }
