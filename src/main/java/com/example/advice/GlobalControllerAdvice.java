@@ -1,11 +1,11 @@
 package com.example.advice;
 
 import com.example.exception.ConflictException;
+import com.example.exception.CustomAccessDeniedException;
 import com.example.exception.TokenException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -80,8 +80,8 @@ public class GlobalControllerAdvice {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(message);
     }
 
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<String> handleAccessDeniedException (AccessDeniedException e) {
+    @ExceptionHandler(CustomAccessDeniedException.class)
+    public ResponseEntity<String> handleCustomAccessDeniedException (CustomAccessDeniedException e) {
         message = String.format("Access Denied: %s", e.getMessage());
         logException();
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(message);

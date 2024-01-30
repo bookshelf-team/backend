@@ -1,6 +1,7 @@
 package com.example.service;
 
 import com.example.exception.ConflictException;
+import com.example.exception.CustomAccessDeniedException;
 import com.example.model.*;
 import com.example.payload.request.BookRequest;
 import com.example.repository.BookRepository;
@@ -8,7 +9,6 @@ import com.example.repository.GenreRepository;
 import com.example.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.GrantedAuthority;
@@ -86,7 +86,7 @@ public class BookService {
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
 
         if (!book.getAddedByUser().equals(user) && getUserRoles(SecurityContextHolder.getContext()).contains("USER")) {
-            throw new AccessDeniedException("User doesn't have access to update this book");
+            throw new CustomAccessDeniedException("User doesn't have access to update this book");
         }
 
         if (!book.getIsbn().equals(bookRequest.getIsbn()) && bookRepository.existsByIsbn(bookRequest.getIsbn())) {
@@ -105,7 +105,7 @@ public class BookService {
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
 
         if (!book.getAddedByUser().equals(user) && getUserRoles(SecurityContextHolder.getContext()).contains("USER")) {
-            throw new AccessDeniedException("User doesn't have access to update this book");
+            throw new CustomAccessDeniedException("User doesn't have access to update this book");
         }
 
         if (!book.getIsbn().equals(bookRequest.getIsbn()) && bookRepository.existsByIsbn(bookRequest.getIsbn())) {
@@ -124,7 +124,7 @@ public class BookService {
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
 
         if (!book.getAddedByUser().equals(user) && getUserRoles(SecurityContextHolder.getContext()).contains("ROLE_USER")) {
-            throw new AccessDeniedException("User doesn't have access to update this book");
+            throw new CustomAccessDeniedException("User doesn't have access to update this book");
         }
 
         bookRepository.deleteById(id);
@@ -139,7 +139,7 @@ public class BookService {
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
 
         if (!book.getAddedByUser().equals(user) && getUserRoles(SecurityContextHolder.getContext()).contains("USER")) {
-            throw new AccessDeniedException("User doesn't have access to update this book");
+            throw new CustomAccessDeniedException("User doesn't have access to update this book");
         }
 
         bookRepository.deleteByIsbn(isbn);
