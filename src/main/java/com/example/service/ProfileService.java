@@ -70,7 +70,7 @@ public class ProfileService {
 
         Profile profile = user.getProfile();
 
-        Book book = bookRepository.findById((bookToProfileRelationRequest.getBookId()))
+        Book book = bookRepository.findByIsbn((bookToProfileRelationRequest.getBookIsbn()))
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
 
         ProfileBookRelation relation = new ProfileBookRelation(profile, book,
@@ -79,5 +79,17 @@ public class ProfileService {
                         .orElseThrow(() -> new NoSuchElementException("Book relation type is not exist")));
         profileBookRelationRepository.save(relation);
         return "Book added to profile successfully";
+    }
+
+    @Transactional
+    public String changeBookFromProfileRelationType(BookToProfileRelationRequest bookToProfileRelationRequest) {
+
+        return "Book to profile relation updated successfully";
+    }
+
+    @Transactional
+    public String deleteBookFromProfile(BookToProfileRelationRequest bookToProfileRelationRequest) {
+
+        return "Book deleted from profile successfully";
     }
 }

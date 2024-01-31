@@ -11,8 +11,8 @@ public class BookToProfileRelationRequest {
     @NotBlank(message = "Username cannot be blank")
     String username;
 
-    @NotNull(message = "Book ID cannot be null")
-    Long bookId;
+    @NotNull(message = "Book ISBN cannot be null")
+    String bookIsbn;
 
     @NotBlank(message = "Relation Type cannot be blank")
     String relationType;

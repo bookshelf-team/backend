@@ -1,5 +1,6 @@
 package com.example.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,15 +18,16 @@ import java.util.Set;
 @Table(name = "profile_books")
 public class ProfileBookRelation extends BaseEntity {
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "profile_id")
     private Profile profile;
 
     @ManyToOne
-    @JoinColumn(name = "book_id")
+    @JoinColumn(name = "book_isbn")
     private Book book;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "relation_type_id")
     private BookRelationType relationType;
 }

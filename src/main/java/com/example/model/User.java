@@ -1,5 +1,6 @@
 package com.example.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -43,6 +44,7 @@ public class User extends BaseEntity {
     @Email
     private String email;
 
+    @JsonIgnore
     @NotBlank
     @Size(max = 120)
     private String password;
@@ -53,7 +55,7 @@ public class User extends BaseEntity {
     @Size(max = 120)
     private String lastLogin;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(  name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))

@@ -53,8 +53,8 @@ public class Book extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
     private Set<Genre> genres = new HashSet<>();
 
-    @OneToMany(mappedBy = "book", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ProfileBookRelation> profileBookRelations = new HashSet<>();
+//    @OneToMany(mappedBy = "book", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+//    private Set<ProfileBookRelation> profileBookRelations = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "added_by_user_id")
