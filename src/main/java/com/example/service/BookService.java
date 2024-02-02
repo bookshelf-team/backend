@@ -4,9 +4,12 @@ import com.example.exception.ConflictException;
 import com.example.exception.CustomAccessDeniedException;
 import com.example.model.*;
 import com.example.payload.request.BookRequest;
+import com.example.payload.request.BookToProfileRelationRequest;
 import com.example.repository.BookRepository;
 import com.example.repository.GenreRepository;
 import com.example.repository.UserRepository;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.core.context.SecurityContext;
@@ -19,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -29,6 +33,8 @@ public class BookService {
     private final GenreRepository genreRepository;
 
     private final UserRepository userRepository;
+
+    private final Validator validator;
 
     public List<Book> getAllBooks() {
         return bookRepository.findAll();
@@ -64,8 +70,14 @@ public class BookService {
 
     @Transactional
     public String addBook(BookRequest bookRequest) {
-        User user = userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(() -> new NoSuchElementException("User from token is not exist"));
+        Set<ConstraintViolation<BookRequest>> violations = validator.validate(bookRequest);
+        if (!violations.isEmpty()) {
+            throw new IllegalArgumentException(violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(", ")));
+        }
+
+        User user = getUserFromSecurityContext(SecurityContextHolder.getContext());
 
         if (bookRepository.existsByIsbn(bookRequest.getIsbn())) {
             throw new ConflictException("ISBN is already taken");
@@ -80,6 +92,13 @@ public class BookService {
 
     @Transactional
     public Book updateBookById(Long id, BookRequest bookRequest) {
+        Set<ConstraintViolation<BookRequest>> violations = validator.validate(bookRequest);
+        if (!violations.isEmpty()) {
+            throw new IllegalArgumentException(violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(", ")));
+        }
+
         User user = getUserFromSecurityContext(SecurityContextHolder.getContext());
 
         Book book = bookRepository.findById(id)
@@ -99,6 +118,13 @@ public class BookService {
 
     @Transactional
     public Book updateBookByIsbn(String isbn, BookRequest bookRequest) {
+        Set<ConstraintViolation<BookRequest>> violations = validator.validate(bookRequest);
+        if (!violations.isEmpty()) {
+            throw new IllegalArgumentException(violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(", ")));
+        }
+
         User user = getUserFromSecurityContext(SecurityContextHolder.getContext());
 
         Book book = bookRepository.findByIsbn(isbn)
@@ -159,6 +185,7 @@ public class BookService {
     }
 
     private void copyBookProperties(BookRequest bookRequest, Book book) {
+
         BeanUtils.copyProperties(bookRequest, book, "id", "genres", "profileBookRelations");
 
         Set<Genre> genres = new HashSet<>();

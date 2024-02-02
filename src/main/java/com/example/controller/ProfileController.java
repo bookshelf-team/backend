@@ -6,6 +6,7 @@ import com.example.service.ProfileService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,9 +33,24 @@ public class ProfileController {
         return profileService.updateProfileByUsername(username, profileRequest);
     }
 
-    @PreAuthorize("(#bookToProfileRelationRequest.username == authentication.name and hasRole('USER')) or hasRole('MODERATOR') or hasRole('ADMIN')")
-    @PostMapping("/add/book")
+    @PreAuthorize("(#bookToProfileRelationRequest.username == authentication.name and hasRole('USER')) " +
+            "or hasRole('MODERATOR') or hasRole('ADMIN')")
+    @PostMapping("/book/add")
     public String addBookToProfile(@RequestBody BookToProfileRelationRequest bookToProfileRelationRequest) {
         return profileService.addBookToProfile(bookToProfileRelationRequest);
+    }
+
+    @PreAuthorize("(#bookToProfileRelationRequest.username == authentication.name and hasRole('USER')) " +
+            "or hasRole('MODERATOR') or hasRole('ADMIN')")
+    @PostMapping("/book/update")
+    public String changeBookFromProfileRelationType(@RequestBody BookToProfileRelationRequest bookToProfileRelationRequest) {
+        return profileService.changeBookFromProfileRelationType(bookToProfileRelationRequest);
+    }
+
+    @PreAuthorize("(#bookToProfileRelationRequest.username == authentication.name and hasRole('USER')) " +
+            "or hasRole('MODERATOR') or hasRole('ADMIN')")
+    @DeleteMapping("/book/delete")
+    public String deleteBookFromProfile(@RequestBody BookToProfileRelationRequest bookToProfileRelationRequest) {
+        return profileService.deleteBookFromProfile(bookToProfileRelationRequest);
     }
 }

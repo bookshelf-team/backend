@@ -1,5 +1,6 @@
 package com.example.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
@@ -8,7 +9,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.UniqueElements;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -20,27 +20,27 @@ import java.util.Set;
 @Table(name = "books")
 public class Book extends BaseEntity {
 
-    @NotBlank
+    @NotBlank(message = "Author cannot be blank")
     @Size(max = 100)
     private String author;
 
-    @NotBlank
+    @NotBlank(message = "Title cannot be blank")
     @Size(max = 100)
     private String title;
 
-    @NotBlank
+    @NotBlank(message = "Description cannot be blank")
     @Size(max = 1000)
     private String description;
 
-    @NotNull
+    @NotNull(message = "Publication year cannot be null")
     @Max(2024)
     private Integer publicationYear;
 
-    @NotBlank
+    @NotBlank(message = "ISBN cannot be blank")
     @Size(max = 20)
     private String isbn;
 
-    @NotNull
+    @NotNull(message = "Page count cannot be null")
     private Integer pageCount;
 
     private String coverImageUrl;
@@ -53,9 +53,7 @@ public class Book extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
     private Set<Genre> genres = new HashSet<>();
 
-//    @OneToMany(mappedBy = "book", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-//    private Set<ProfileBookRelation> profileBookRelations = new HashSet<>();
-
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "added_by_user_id")
     private User addedByUser;
