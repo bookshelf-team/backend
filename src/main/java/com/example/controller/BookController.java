@@ -28,7 +28,7 @@ public class BookController {
     }
 
     @GetMapping("/search/isbn")
-    public Book getBookByIsbn(@RequestParam String isbn) {
+    public List<Book> getBookByIsbn(@RequestParam String isbn) {
         return bookService.getBookByIsbn(isbn);
     }
 
@@ -45,6 +45,11 @@ public class BookController {
     @GetMapping("/search/genre")
     public List<Book> getBooksByGenre(@RequestParam String genre) {
         return bookService.getBooksByGenre(genre);
+    }
+
+    @GetMapping("/search/genres")
+    public List<Book> getBooksByGenre(@RequestParam List<String> genres) {
+        return bookService.getBooksByGenres(genres);
     }
 
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")

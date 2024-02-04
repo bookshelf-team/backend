@@ -63,11 +63,11 @@ public class ProfileService {
         Book book = bookRepository.findByIsbn((bookToProfileRelationRequest.getBookIsbn()))
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
 
-        if (profileBookRelationRepository.existsByProfileAndBook(profile, book)) {
+        if (profileBookRelationRepository.existsByProfileAndBookIsbn(profile, book.getIsbn())) {
             throw new ConflictException("This book to profile relation is already taken");
         }
 
-        ProfileBookRelation relation = new ProfileBookRelation(profile, book,
+        ProfileBookRelation relation = new ProfileBookRelation(profile, book.getIsbn(),
                 bookRelationTypeRepository.findByName(EBookRelationType.valueOf("TYPE_"
                                 + bookToProfileRelationRequest.getRelationType().toUpperCase()))
                         .orElseThrow(() -> new NoSuchElementException("Book relation type is not exist")));
@@ -82,7 +82,8 @@ public class ProfileService {
         Book book = bookRepository.findByIsbn((bookToProfileRelationRequest.getBookIsbn()))
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
 
-        ProfileBookRelation profileBookRelation = profileBookRelationRepository.findByProfileAndBook(profile, book)
+        ProfileBookRelation profileBookRelation = profileBookRelationRepository
+                .findByProfileAndBookIsbn(profile, book.getIsbn())
                 .orElseThrow(() -> new NoSuchElementException("This book to profile relation is not exist"));
 
         profileBookRelation.setRelationType(bookRelationTypeRepository
@@ -100,10 +101,11 @@ public class ProfileService {
         Book book = bookRepository.findByIsbn((bookToProfileRelationRequest.getBookIsbn()))
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
 
-        ProfileBookRelation profileBookRelation = profileBookRelationRepository.findByProfileAndBook(profile, book)
+        ProfileBookRelation profileBookRelation = profileBookRelationRepository
+                .findByProfileAndBookIsbn(profile, book.getIsbn())
                 .orElseThrow(() -> new NoSuchElementException("This book to profile relation is not exist"));
 
-        profileBookRelationRepository.deleteById(profileBookRelation.getId()); // Not working...
+        profileBookRelationRepository.deleteById(profileBookRelation.getId());
 
         return "Book deleted from profile successfully";
     }

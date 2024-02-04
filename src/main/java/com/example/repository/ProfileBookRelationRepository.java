@@ -1,6 +1,5 @@
 package com.example.repository;
 
-import com.example.model.Book;
 import com.example.model.Profile;
 import com.example.model.ProfileBookRelation;
 import jakarta.transaction.Transactional;
@@ -15,9 +14,9 @@ import java.util.Optional;
 @Repository
 public interface ProfileBookRelationRepository extends JpaRepository<ProfileBookRelation, Long> {
 
-    boolean existsByProfileAndBook(Profile profile, Book book);
+    boolean existsByProfileAndBookIsbn(Profile profile, String isbn);
 
-    Optional<ProfileBookRelation> findByProfileAndBook(Profile profile, Book book);
+    Optional<ProfileBookRelation> findByProfileAndBookIsbn(Profile profile, String isbn);
 
     @Transactional
     @Modifying

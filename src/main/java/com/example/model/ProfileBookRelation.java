@@ -23,9 +23,7 @@ public class ProfileBookRelation extends BaseEntity {
     @JoinColumn(name = "profile_id")
     private Profile profile;
 
-    @ManyToOne
-    @JoinColumn(name = "book_isbn")
-    private Book book;
+    private String bookIsbn;
 
     @ManyToOne
     @JoinColumn(name = "relation_type_id")

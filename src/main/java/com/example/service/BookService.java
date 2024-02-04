@@ -4,7 +4,6 @@ import com.example.exception.ConflictException;
 import com.example.exception.CustomAccessDeniedException;
 import com.example.model.*;
 import com.example.payload.request.BookRequest;
-import com.example.payload.request.BookToProfileRelationRequest;
 import com.example.repository.BookRepository;
 import com.example.repository.GenreRepository;
 import com.example.repository.UserRepository;
@@ -18,10 +17,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -45,18 +41,18 @@ public class BookService {
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
     }
 
-    public Book getBookByIsbn(String isbn) {
-        return bookRepository.findByIsbn(isbn)
+    public List<Book> getBookByIsbn(String isbn) {
+        return bookRepository.findByIsbnContainingIgnoreCase(isbn)
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
     }
 
     public List<Book> getBooksByTitle(String title) {
-        return bookRepository.findByTitle(title)
+        return bookRepository.findByTitleContainingIgnoreCase(title)
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
     }
 
     public List<Book> getBooksByAuthor(String author) {
-        return bookRepository.findByAuthor(author)
+        return bookRepository.findByAuthorContainingIgnoreCase(author)
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
     }
 
@@ -66,6 +62,17 @@ public class BookService {
                         "GENRE_" + genreName.toUpperCase()));
 
         return bookRepository.findByGenre(genre);
+    }
+
+    public List<Book> getBooksByGenres(List<String> genreNames) {
+        List<Genre> genres = new ArrayList<>();
+        for (String genreName: genreNames) {
+            genres.add(genreRepository.findByName(EGenre.valueOf("GENRE_" + genreName.toUpperCase()))
+                    .orElseThrow(() -> new NoSuchElementException("Genre is not found: " +
+                            "GENRE_" + genreName.toUpperCase())));
+        }
+
+        return bookRepository.findByGenres(genres, (long) genres.size());
     }
 
     @Transactional
