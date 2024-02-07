@@ -21,16 +21,16 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Optional<Book> findByIsbn(String isbn);
 
-    @Query("SELECT b FROM Book b WHERE lower(b.isbn) LIKE lower(concat('%', :isbn, '%')) " +
-            "ORDER BY FUNCTION('levenshtein', b.isbn, :isbn)")
+    @Query("SELECT b FROM Book b WHERE lower(b.isbn) LIKE lower(concat('%', :isbn, '%')) "
+            + "ORDER BY FUNCTION('levenshtein', b.isbn, :isbn)")
     Optional<List<Book>> findByIsbnContainingIgnoreCase(String isbn);
 
-    @Query("SELECT b FROM Book b WHERE lower(b.title) LIKE lower(concat('%', :title, '%')) " +
-            "ORDER BY FUNCTION('levenshtein', b.title, :title)")
+    @Query("SELECT b FROM Book b WHERE lower(b.title) LIKE lower(concat('%', :title, '%')) "
+            + "ORDER BY FUNCTION('levenshtein', b.title, :title)")
     Optional<List<Book>> findByTitleContainingIgnoreCase(@NotNull String title);
 
-    @Query("SELECT b FROM Book b WHERE lower(b.author) LIKE lower(concat('%', :author, '%')) " +
-            "ORDER BY FUNCTION('levenshtein', b.author, :author)")
+    @Query("SELECT b FROM Book b WHERE lower(b.author) LIKE lower(concat('%', :author, '%')) "
+            + "ORDER BY FUNCTION('levenshtein', b.author, :author)")
     Optional<List<Book>> findByAuthorContainingIgnoreCase(@NotNull String author);
 
     @Query("SELECT DISTINCT b FROM Book b JOIN b.genres g WHERE g = :genre")

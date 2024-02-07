@@ -59,7 +59,7 @@ public class AuthService {
 
     private final JwtUtils jwtUtils;
 
-    private final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private final Validator validator;
 
@@ -235,6 +235,6 @@ public class AuthService {
     }
 
     private String getTimeStamp() {
-        return DATE_TIME_FORMAT.format(new Date());
+        return dateTimeFormat.format(new Date());
     }
 }

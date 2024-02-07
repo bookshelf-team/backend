@@ -60,28 +60,28 @@ public class GlobalControllerAdvice {
     }
 
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<String> handleNoSuchElementException (NoSuchElementException e) {
+    public ResponseEntity<String> handleNoSuchElementException(NoSuchElementException e) {
         message = String.format("Not Found: %s", e.getMessage());
         logException();
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
     }
 
     @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<String> handleConflictException (ConflictException e) {
+    public ResponseEntity<String> handleConflictException(ConflictException e) {
         message = String.format("Conflict: %s", e.getMessage());
         logException();
         return ResponseEntity.status(HttpStatus.CONFLICT).body(message);
     }
 
     @ExceptionHandler(TokenException.class)
-    public ResponseEntity<String> handleTokenException (TokenException e) {
+    public ResponseEntity<String> handleTokenException(TokenException e) {
         message = String.format("Token Problem: %s", e.getMessage());
         logException();
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(message);
     }
 
     @ExceptionHandler(CustomAccessDeniedException.class)
-    public ResponseEntity<String> handleCustomAccessDeniedException (CustomAccessDeniedException e) {
+    public ResponseEntity<String> handleCustomAccessDeniedException(CustomAccessDeniedException e) {
         message = String.format("Access Denied: %s", e.getMessage());
         logException();
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(message);

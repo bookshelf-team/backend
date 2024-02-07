@@ -31,7 +31,7 @@ public class PostService {
 
     private final Validator validator;
 
-    private final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public List<Post> getAllPosts() {
         return postRepository.findAll();
@@ -119,6 +119,6 @@ public class PostService {
     }
 
     private String getTimeStamp() {
-        return DATE_TIME_FORMAT.format(new Date());
+        return dateTimeFormat.format(new Date());
     }
 }

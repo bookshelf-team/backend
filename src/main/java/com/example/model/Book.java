@@ -48,7 +48,7 @@ public class Book extends BaseEntity {
     private String diskImageUrl;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(  name = "book_genres",
+    @JoinTable(name = "book_genres",
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
     private Set<Genre> genres = new HashSet<>();

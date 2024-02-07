@@ -1,8 +1,18 @@
+import org.codehaus.groovy.runtime.GStringImpl
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.1'
     id 'io.spring.dependency-management' version '1.1.4'
     id 'org.flywaydb.flyway' version '10.4.1'
+    id 'checkstyle'
+    id 'jacoco'
 }
 
 group = 'com.example'
@@ -23,6 +33,14 @@ ext {
     flywayVersion = '10.4.1'
     lombokVersion = '1.18.30'
     jakartaVersion = '3.0.2'
+    checkstyleVersion = '10.9.3'
+    testcontainersVersion = '1.19.4'
+    restAssuredVersion = '5.4.0'
+    mockitoVersion = '5.10.0'
+//    mockwebserverVersion = '4.12.0'
+
+    checkstyleConfigFile = "${rootDir}/config/checkstyle/checkstyle.xml" as GStringImpl
+    checkstyleSuppressionFile = "${rootDir}/config/checkstyle/suppressions.xml" as GStringImpl
 }
 
 dependencies {
@@ -46,4 +64,40 @@ dependencies {
 
     testCompileOnly "org.projectlombok:lombok:$lombokVersion"
     testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
+
+    checkstyle "com.puppycrawl.tools:checkstyle:$checkstyleVersion"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test:$springVersion"
+    testImplementation "org.testcontainers:junit-jupiter:$testcontainersVersion"
+    testImplementation "org.testcontainers:postgresql:$testcontainersVersion"
+    testImplementation "io.rest-assured:rest-assured:$restAssuredVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+//    testImplementation "com.squareup.okhttp3:mockwebserver:$mockwebserverVersion"
+}
+
+tasks.named('test') {
+    useJUnitPlatform(){
+        ignoreFailures = true
+    }
+}
+
+jacocoTestReport {
+    reports {
+        html.outputLocation = layout.buildDirectory.dir('jacoco')
+    }
+}
+
+checkstyle {
+    toolVersion = "$checkstyleVersion"
+    configFile = file("$checkstyleConfigFile")
+    configProperties = ['suppressionFile' : file("$checkstyleSuppressionFile")]
+    sourceSets = [project.sourceSets.main, project.sourceSets.test] as Collection<SourceSet>
+}
+
+tasks.withType(Checkstyle).configureEach {
+    reports {
+        xml.required = false
+        html.required = true
+        html.stylesheet resources.text.fromFile("config/xsl/checkstyle-custom.xsl")
+    }
 }

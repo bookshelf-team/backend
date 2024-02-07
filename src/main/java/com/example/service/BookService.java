@@ -58,8 +58,8 @@ public class BookService {
 
     public List<Book> getBooksByGenre(String genreName) {
         Genre genre = genreRepository.findByName(EGenre.valueOf("GENRE_" + genreName.toUpperCase()))
-                .orElseThrow(() -> new NoSuchElementException("Genre is not found: " +
-                        "GENRE_" + genreName.toUpperCase()));
+                .orElseThrow(() -> new NoSuchElementException("Genre is not found: "
+                        + "GENRE_" + genreName.toUpperCase()));
 
         return bookRepository.findByGenre(genre);
     }
@@ -68,8 +68,8 @@ public class BookService {
         List<Genre> genres = new ArrayList<>();
         for (String genreName: genreNames) {
             genres.add(genreRepository.findByName(EGenre.valueOf("GENRE_" + genreName.toUpperCase()))
-                    .orElseThrow(() -> new NoSuchElementException("Genre is not found: " +
-                            "GENRE_" + genreName.toUpperCase())));
+                    .orElseThrow(() -> new NoSuchElementException("Genre is not found: "
+                            + "GENRE_" + genreName.toUpperCase())));
         }
 
         return bookRepository.findByGenres(genres, (long) genres.size());
@@ -198,8 +198,8 @@ public class BookService {
         Set<Genre> genres = new HashSet<>();
         for (String genreName: bookRequest.getGenres()) {
             genres.add(genreRepository.findByName(EGenre.valueOf("GENRE_" + genreName.toUpperCase()))
-                    .orElseThrow(() -> new NoSuchElementException("Genre is not found: " +
-                            "GENRE_" + genreName.toUpperCase())));
+                    .orElseThrow(() -> new NoSuchElementException("Genre is not found: "
+                            + "GENRE_" + genreName.toUpperCase())));
         }
 
         book.setGenres(genres);
