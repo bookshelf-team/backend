@@ -37,7 +37,6 @@ ext {
     testcontainersVersion = '1.19.4'
     restAssuredVersion = '5.4.0'
     mockitoVersion = '5.10.0'
-//    mockwebserverVersion = '4.12.0'
 
     checkstyleConfigFile = "${rootDir}/config/checkstyle/checkstyle.xml" as GStringImpl
     checkstyleSuppressionFile = "${rootDir}/config/checkstyle/suppressions.xml" as GStringImpl
@@ -72,7 +71,6 @@ dependencies {
     testImplementation "org.testcontainers:postgresql:$testcontainersVersion"
     testImplementation "io.rest-assured:rest-assured:$restAssuredVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
-//    testImplementation "com.squareup.okhttp3:mockwebserver:$mockwebserverVersion"
 }
 
 tasks.named('test') {

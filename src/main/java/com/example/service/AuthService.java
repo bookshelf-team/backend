@@ -72,38 +72,27 @@ public class AuthService {
                     .collect(Collectors.joining(", ")));
         }
 
-        User user = null;
-        if (userRepository.existsByEmail(signinRequest.getEmailOrUsername())) {
-            user = userRepository.findByEmail(signinRequest.getEmailOrUsername()).orElseThrow();
-        } else if (userRepository.existsByUsername(signinRequest.getEmailOrUsername())) {
-            user = userRepository.findByUsername(signinRequest.getEmailOrUsername()).orElseThrow();
-        }
+        User user = userRepository.findByEmail(signinRequest.getEmailOrUsername())
+                .or(() -> userRepository.findByUsername(signinRequest.getEmailOrUsername()))
+                .orElseThrow(() -> new BadCredentialsException("User is not exist"));
 
-        if (user != null) {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUsername(), signinRequest.getPassword()));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(user.getUsername(), signinRequest.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-            String jwtToken = jwtUtils.generateJwtToken(userDetails);
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        String jwtToken = jwtUtils.generateJwtToken(userDetails);
 
-            userRepository.updateLastLogin(getTimeStamp(), user.getUsername());
+        userRepository.updateLastLogin(getTimeStamp(), user.getUsername());
 
-            List<String> roles = userDetails.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toList());
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
 
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUsername());
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUsername());
 
-            return new JwtResponse(jwtToken,
-                    refreshToken.getRefreshToken(),
-                    userDetails.getId(),
-                    userDetails.getUsername(),
-                    userDetails.getEmail(),
-                    roles);
-        } else {
-            throw new BadCredentialsException("User is not exist");
-        }
+        return new JwtResponse(jwtToken, refreshToken.getRefreshToken(), userDetails.getId(), userDetails.getUsername(),
+                userDetails.getEmail(), roles);
     }
 
     @Transactional
@@ -132,48 +121,45 @@ public class AuthService {
         profileRepository.save(profile);
         user.setProfile(profile);
 
-        Set<String> strRoles = signUpRequest.getRole();
-        Set<Role> roles = new HashSet<>();
-
-        if (strRoles == null) {
-            Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> new NoSuchElementException("Role is not found"));
-            roles.add(userRole);
-        } else {
-            strRoles.forEach(role -> {
-                switch (role) {
-                    case "admin" -> {
-                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                                .orElseThrow(() -> new NoSuchElementException("Role is not found"));
-                        roles.add(adminRole);
-                    }
-                    case "moderator" -> {
-                        Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
-                                .orElseThrow(() -> new NoSuchElementException("Role is not found"));
-                        roles.add(modRole);
-                    }
-                    default -> {
-                        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                                .orElseThrow(() -> new NoSuchElementException("Role is not found"));
-                        roles.add(userRole);
-                    }
-                }
-            });
-        }
-
+        Set<Role> roles = getRolesFromSignupRequest(signUpRequest.getRole());
         user.setRoles(roles);
         userRepository.save(user);
 
         return "User registered successfully";
     }
 
+    private Set<Role> getRolesFromSignupRequest(Set<String> strRoles) {
+        Set<Role> roles = new HashSet<>();
+
+        if (strRoles == null || strRoles.isEmpty()) {
+            return Set.of(roleRepository.findByName(ERole.ROLE_USER)
+                    .orElseThrow(() -> new NoSuchElementException("Role is not found")));
+        } else {
+            strRoles.forEach(role -> {
+                switch (role) {
+                    case "admin" -> roles.add(roleRepository.findByName(ERole.ROLE_ADMIN)
+                            .orElseThrow(() -> new NoSuchElementException("Role is not found")));
+                    case "moderator" -> roles.add(roleRepository.findByName(ERole.ROLE_MODERATOR)
+                            .orElseThrow(() -> new NoSuchElementException("Role is not found")));
+                    case "user" -> roles.add(roleRepository.findByName(ERole.ROLE_USER)
+                            .orElseThrow(() -> new NoSuchElementException("Role is not found")));
+                }
+            });
+        }
+
+        if (roles.isEmpty()) {
+            return Set.of(roleRepository.findByName(ERole.ROLE_USER)
+                    .orElseThrow(() -> new NoSuchElementException("Role is not found")));
+        }
+
+        return roles;
+    }
+
     @Transactional
     public String logoutUser() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (refreshTokenService.deleteByUserId(userDetails.getId())) {
-            return "User logged out successfully";
-        }
-        throw new RuntimeException("An error occurred while trying to log out");
+        refreshTokenService.deleteByUserId(userDetails.getId());
+        return "User logged out successfully";
     }
 
     @Transactional

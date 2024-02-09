@@ -16,6 +16,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import javax.sql.DataSource;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -96,7 +97,7 @@ public class IntegrationTest {
                 .statusCode(200)
                 .extract().response();
 
-        accessToken = response.path("accessToken");
+        accessToken = response.path("token");
         refreshToken = response.path("refreshToken");
     }
 
@@ -128,7 +129,78 @@ public class IntegrationTest {
                 .then()
                 .statusCode(200)
                 .body(equalTo("User logged out successfully"));
+    }
 
-        refreshToken = null;
+    @Test
+    @Order(5)
+    public void testRefreshTokenFailure() {
+        given()
+                .contentType(ContentType.JSON)
+                .body("{\"refreshToken\":\"" + refreshToken + "\"}")
+                .when()
+                .post("/auth/refresh")
+                .then()
+                .statusCode(403)
+                .body(equalTo("Token Problem: Failed for ["
+                        + refreshToken
+                        + "]: Refresh token is not in database"));
+    }
+
+    @Test
+    @Order(5)
+    public void testJwtFailure() {
+        given()
+                .get("/test/user")
+                .then()
+                .statusCode(401)
+                .body(equalTo("{\"path\":\"/test/user\",\"error\":\"Unauthorized\",\"message\":\"Full authentic"
+                        + "ation is required to access this resource\",\"status\":401}"));
+
+        given()
+                .header("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0IiwiYXV0aG9y"
+                        + "aXRpZXMiOlt7ImF1dGhvcml0eSI6IlJPTEVfVVNFUiJ9XSwiaWF0IjoxNzA1MjQwMjAyLCJleHAiOjE3MDUyNDExMDJ9"
+                        + ".eq5H0hvabXETbPHMAK7ksa4UxsYm6fVuLrsCWhFstTg")
+                .when()
+                .get("/test/user")
+                .then()
+                .statusCode(401)
+                .body(equalTo("{\"path\":\"/test/user\",\"error\":\"Unauthorized\",\"message\":\"Full authentic"
+                        + "ation is required to access this resource\",\"status\":401}"));
+    }
+
+    @Test
+    @Order(6)
+    public void testUserContentAccess() {
+        Response response = given()
+                .contentType(ContentType.JSON)
+                .body("{\"emailOrUsername\":\"test\", \"password\":\"password\"}")
+                .when()
+                .post("/auth/signin")
+                .then()
+                .statusCode(200)
+                .extract().response();
+
+        accessToken = response.path("token");
+        refreshToken = response.path("refreshToken");
+
+        given()
+                .header("Authorization", "Bearer " + accessToken)
+                .when()
+                .get("/test/user")
+                .then()
+                .statusCode(200)
+                .body(equalTo("User Content."));
+    }
+
+    @Test
+    @Order(6)
+    public void testAdminContentAccessFailure() {
+        given()
+                .header("Authorization", "Bearer " + accessToken)
+                .when()
+                .get("/test/admin")
+                .then()
+                .statusCode(403)
+                .body(containsString(",\"status\":403,\"error\":\"Forbidden\",\"path\":\"/test/admin\""));
     }
 }
