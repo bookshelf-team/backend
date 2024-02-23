@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Slf4j
@@ -35,7 +36,8 @@ public class RefreshTokenService {
     }
 
     public RefreshToken createRefreshToken(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow();
+        User user = userRepository.findByUsername(username).orElseThrow(() ->
+                new NoSuchElementException("User is not exist"));
         refreshTokenRepository.deleteByUserId(user.getId());
 
         RefreshToken refreshToken = new RefreshToken();
@@ -56,8 +58,7 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public boolean deleteByUserId(Long userId) {
+    public void deleteByUserId(Long userId) {
         refreshTokenRepository.deleteByUserId(userId);
-        return true;
     }
 }

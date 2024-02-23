@@ -7,9 +7,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SigninRequest {
-    @NotBlank(message = "Email or username cannot be blank")
+    @NotBlank
     private String emailOrUsername;
 
-    @NotBlank(message = "Password cannot be blank")
+    @NotBlank
     private String password;
 }

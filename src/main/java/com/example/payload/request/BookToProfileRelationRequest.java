@@ -8,12 +8,12 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BookToProfileRelationRequest {
-    @NotBlank(message = "Username cannot be blank")
+    @NotBlank
     String username;
 
-    @NotNull(message = "Book ISBN cannot be null")
+    @NotNull
     String bookIsbn;
 
-    @NotBlank(message = "Relation Type cannot be blank")
+    @NotBlank
     String relationType;
 }

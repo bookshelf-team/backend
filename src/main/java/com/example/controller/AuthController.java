@@ -35,7 +35,7 @@ public class AuthController {
         return authService.registerUser(signUpRequest);
     }
 
-    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/signout")
     public String logoutUser() {
         return authService.logoutUser();

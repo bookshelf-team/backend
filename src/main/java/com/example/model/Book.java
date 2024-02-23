@@ -20,27 +20,27 @@ import java.util.Set;
 @Table(name = "books")
 public class Book extends BaseEntity {
 
-    @NotBlank(message = "Author cannot be blank")
+    @NotBlank
     @Size(max = 100)
     private String author;
 
-    @NotBlank(message = "Title cannot be blank")
+    @NotBlank
     @Size(max = 100)
     private String title;
 
-    @NotBlank(message = "Description cannot be blank")
+    @NotBlank
     @Size(max = 1000)
     private String description;
 
-    @NotNull(message = "Publication year cannot be null")
+    @NotNull
     @Max(2024)
     private Integer publicationYear;
 
-    @NotBlank(message = "ISBN cannot be blank")
+    @NotBlank
     @Size(max = 20)
     private String isbn;
 
-    @NotNull(message = "Page count cannot be null")
+    @NotNull
     private Integer pageCount;
 
     private String coverImageUrl;

@@ -5,8 +5,6 @@ import com.example.model.Post;
 import com.example.model.User;
 import com.example.repository.PostRepository;
 import com.example.repository.UserRepository;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
@@ -18,8 +16,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -29,8 +25,6 @@ public class PostService {
 
     private final UserRepository userRepository;
 
-    private final Validator validator;
-
     private final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public List<Post> getAllPosts() {
@@ -38,9 +32,8 @@ public class PostService {
     }
 
     public List<Post> getAllPostsByUsername(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new NoSuchElementException("User is not exist"));
-        return postRepository.findAllByAddedByUser(user);
+        return postRepository.findAllByAddedByUser(userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User is not exist")));
     }
 
     public Post getPostById(Long id) {
@@ -50,17 +43,8 @@ public class PostService {
 
     @Transactional
     public String addPost(Post post) {
-        Set<ConstraintViolation<Post>> violations = validator.validate(post);
-        if (!violations.isEmpty()) {
-            throw new IllegalArgumentException(violations.stream()
-                    .map(ConstraintViolation::getMessage)
-                    .collect(Collectors.joining(", ")));
-        }
-
-        User user = getUserFromSecurityContext(SecurityContextHolder.getContext());
-
         Post postToSave = new Post(post.getTitle(), post.getBody());
-        postToSave.setAddedByUser(user);
+        postToSave.setAddedByUser(getUserFromSecurityContext(SecurityContextHolder.getContext()));
         postToSave.setPublicationDate(getTimeStamp());
         postRepository.save(postToSave);
         return "Post added successfully";
@@ -68,19 +52,11 @@ public class PostService {
 
     @Transactional
     public Post updatePostById(Long id, Post post) {
-        Set<ConstraintViolation<Post>> violations = validator.validate(post);
-        if (!violations.isEmpty()) {
-            throw new IllegalArgumentException(violations.stream()
-                    .map(ConstraintViolation::getMessage)
-                    .collect(Collectors.joining(", ")));
-        }
-
-        User user = getUserFromSecurityContext(SecurityContextHolder.getContext());
-
         Post sevedPost = postRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Post is not exist"));
 
-        if (!sevedPost.getAddedByUser().equals(user) && getUserRoles(SecurityContextHolder.getContext()).contains("USER")) {
+        if (!sevedPost.getAddedByUser().equals(getUserFromSecurityContext(SecurityContextHolder.getContext()))
+                && getUserRoles(SecurityContextHolder.getContext()).contains("USER")) {
             throw new CustomAccessDeniedException("User doesn't have access to update this post");
         }
 
@@ -93,12 +69,11 @@ public class PostService {
 
     @Transactional
     public String deletePostById(Long id) {
-        User user = getUserFromSecurityContext(SecurityContextHolder.getContext());
-
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Post is not exist"));
 
-        if (!post.getAddedByUser().equals(user) && getUserRoles(SecurityContextHolder.getContext()).contains("ROLE_USER")) {
+        if (!post.getAddedByUser().equals(getUserFromSecurityContext(SecurityContextHolder.getContext()))
+                && getUserRoles(SecurityContextHolder.getContext()).contains("ROLE_USER")) {
             throw new CustomAccessDeniedException("User doesn't have access to update this post");
         }
 

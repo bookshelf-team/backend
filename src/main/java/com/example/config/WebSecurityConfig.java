@@ -3,8 +3,6 @@ package com.example.config;
 import com.example.security.jwt.AuthEntryPointJwt;
 import com.example.security.jwt.AuthTokenFilter;
 import com.example.security.service.UserDetailsServiceImpl;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,11 +47,6 @@ public class WebSecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public Validator validator() {
-        return Validation.buildDefaultValidatorFactory().getValidator();
     }
 
     @Bean

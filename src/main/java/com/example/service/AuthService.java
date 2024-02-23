@@ -38,7 +38,6 @@ import java.util.Set;
 import java.util.List;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
@@ -62,6 +61,60 @@ public class AuthService {
     private final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private final Validator validator;
+
+    @Transactional
+    public String registerUser(SignupRequest signUpRequest) {
+        Set<ConstraintViolation<SignupRequest>> violations = validator.validate(signUpRequest);
+        if (!violations.isEmpty()) {
+            throw new IllegalArgumentException(violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(", ")));
+        }
+
+        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+            throw new ConflictException("Username is already taken");
+        }
+
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            throw new ConflictException("Email is already in use");
+        }
+
+        User user = new User(signUpRequest.getUsername(),
+                signUpRequest.getEmail(),
+                encoder.encode(signUpRequest.getPassword()),
+                getTimeStamp());
+
+        Profile profile = new Profile();
+        profileRepository.save(profile);
+        user.setProfile(profile);
+
+        Set<Role> roles = getRolesFromSignupRequest(signUpRequest.getRoles());
+        user.setRoles(roles);
+        userRepository.save(user);
+
+        return "User registered successfully";
+    }
+
+    private Set<Role> getRolesFromSignupRequest(Set<String> strRoles) {
+        Set<Role> roles;
+
+        if (strRoles == null || strRoles.isEmpty()) {
+            return Set.of(roleRepository.findByName(ERole.ROLE_USER)
+                    .orElseThrow(() -> new NoSuchElementException("Role is not found")));
+        } else {
+            roles = strRoles.stream()
+                    .map(role -> roleRepository.findByName(ERole.valueOf("ROLE_" + role.toUpperCase()))
+                            .orElseThrow(() -> new NoSuchElementException("Role is not found")))
+                    .collect(Collectors.toSet());
+        }
+
+        if (roles.isEmpty()) {
+            return Set.of(roleRepository.findByName(ERole.ROLE_USER)
+                    .orElseThrow(() -> new NoSuchElementException("Role is not found")));
+        }
+
+        return roles;
+    }
 
     @Transactional
     public JwtResponse authenticateUser(SigninRequest signinRequest) {
@@ -93,66 +146,6 @@ public class AuthService {
 
         return new JwtResponse(jwtToken, refreshToken.getRefreshToken(), userDetails.getId(), userDetails.getUsername(),
                 userDetails.getEmail(), roles);
-    }
-
-    @Transactional
-    public String registerUser(SignupRequest signUpRequest) {
-        Set<ConstraintViolation<SignupRequest>> violations = validator.validate(signUpRequest);
-        if (!violations.isEmpty()) {
-            throw new IllegalArgumentException(violations.stream()
-                    .map(ConstraintViolation::getMessage)
-                    .collect(Collectors.joining(", ")));
-        }
-
-        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-            throw new ConflictException("Username is already taken");
-        }
-
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            throw new ConflictException("Email is already in use");
-        }
-
-        User user = new User(signUpRequest.getUsername(),
-                signUpRequest.getEmail(),
-                encoder.encode(signUpRequest.getPassword()),
-                getTimeStamp());
-
-        Profile profile = new Profile();
-        profileRepository.save(profile);
-        user.setProfile(profile);
-
-        Set<Role> roles = getRolesFromSignupRequest(signUpRequest.getRole());
-        user.setRoles(roles);
-        userRepository.save(user);
-
-        return "User registered successfully";
-    }
-
-    private Set<Role> getRolesFromSignupRequest(Set<String> strRoles) {
-        Set<Role> roles = new HashSet<>();
-
-        if (strRoles == null || strRoles.isEmpty()) {
-            return Set.of(roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> new NoSuchElementException("Role is not found")));
-        } else {
-            strRoles.forEach(role -> {
-                switch (role) {
-                    case "admin" -> roles.add(roleRepository.findByName(ERole.ROLE_ADMIN)
-                            .orElseThrow(() -> new NoSuchElementException("Role is not found")));
-                    case "moderator" -> roles.add(roleRepository.findByName(ERole.ROLE_MODERATOR)
-                            .orElseThrow(() -> new NoSuchElementException("Role is not found")));
-                    case "user" -> roles.add(roleRepository.findByName(ERole.ROLE_USER)
-                            .orElseThrow(() -> new NoSuchElementException("Role is not found")));
-                }
-            });
-        }
-
-        if (roles.isEmpty()) {
-            return Set.of(roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> new NoSuchElementException("Role is not found")));
-        }
-
-        return roles;
     }
 
     @Transactional

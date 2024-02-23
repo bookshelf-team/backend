@@ -20,11 +20,11 @@ import java.util.Set;
 @Table(name = "posts")
 public class Post extends BaseEntity {
 
-    @NotBlank(message = "Title cannot be blank")
+    @NotBlank
     @Size(max = 100)
     private String title;
 
-    @NotBlank(message = "Body cannot be blank")
+    @NotBlank
     @Size(max = 1000)
     private String body;
 

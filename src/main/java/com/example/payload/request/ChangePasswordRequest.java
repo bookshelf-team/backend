@@ -8,13 +8,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ChangePasswordRequest {
-    @NotBlank(message = "Username cannot be blank")
+    @NotBlank
     String username;
 
-    @NotBlank(message = "Old password cannot be blank")
+    @NotBlank
     private String oldPassword;
 
-    @NotBlank(message = "New password cannot be blank")
-    @Size(min = 6, max = 40, message = "Password must be between 6 and 40 characters")
+    @NotBlank
+    @Size(min = 6, max = 40)
     private String newPassword;
 }

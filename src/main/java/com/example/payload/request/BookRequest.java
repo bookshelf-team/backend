@@ -10,33 +10,33 @@ import java.util.Set;
 @Setter
 public class BookRequest {
 
-    @NotBlank(message = "Author cannot be blank")
+    @NotBlank
     @Size(max = 100)
     String author;
 
-    @NotBlank(message = "Title cannot be blank")
+    @NotBlank
     @Size(max = 100)
     String title;
 
-    @NotBlank(message = "Description cannot be blank")
+    @NotBlank
     @Size(max = 1000)
     String description;
 
-    @NotNull(message = "Publication year cannot be blank")
+    @NotNull
     @Max(2024)
     Integer publicationYear;
 
-    @NotBlank(message = "ISBN cannot be blank")
+    @NotBlank
     @Size(max = 20)
     String isbn;
 
-    @NotNull(message = "Page count cannot be blank")
+    @NotNull
     Integer pageCount;
 
     String coverImageUrl;
 
     String diskImageUrl;
 
-    @NotEmpty(message = "Genres cannot be blank")
+    @NotEmpty
     Set<String> genres;
 }

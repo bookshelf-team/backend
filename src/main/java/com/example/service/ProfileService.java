@@ -3,7 +3,6 @@ package com.example.service;
 import com.example.exception.ConflictException;
 import com.example.model.Book;
 import com.example.model.Profile;
-import com.example.model.User;
 import com.example.model.ProfileBookRelation;
 import com.example.model.EBookRelationType;
 import com.example.payload.request.BookToProfileRelationRequest;
@@ -13,15 +12,11 @@ import com.example.repository.ProfileRepository;
 import com.example.repository.ProfileBookRelationRepository;
 import com.example.repository.BookRelationTypeRepository;
 import jakarta.transaction.Transactional;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -37,20 +32,15 @@ public class ProfileService {
 
     private final BookRelationTypeRepository bookRelationTypeRepository;
 
-    private final Validator validator;
-
     public Profile getProfileByUsername(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new NoSuchElementException("User is not exist"));
-        return user.getProfile();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User is not exist")).getProfile();
     }
 
     @Transactional
     public Profile updateProfileByUsername(String username, Profile updatedProfile) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new NoSuchElementException("User is not exist"));
-
-        Profile profile = user.getProfile();
+        Profile profile = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User is not exist")).getProfile();
 
         BeanUtils.copyProperties(updatedProfile, profile, "id", "profileBookRelations");
         return profileRepository.save(profile);
@@ -77,13 +67,12 @@ public class ProfileService {
 
     @Transactional
     public String changeBookFromProfileRelationType(BookToProfileRelationRequest bookToProfileRelationRequest) {
-        Profile profile = getProfileFromBookToProfileRelationRequest(bookToProfileRelationRequest);
-
         Book book = bookRepository.findByIsbn((bookToProfileRelationRequest.getBookIsbn()))
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
 
         ProfileBookRelation profileBookRelation = profileBookRelationRepository
-                .findByProfileAndBookIsbn(profile, book.getIsbn())
+                .findByProfileAndBookIsbn(getProfileFromBookToProfileRelationRequest(bookToProfileRelationRequest),
+                        book.getIsbn())
                 .orElseThrow(() -> new NoSuchElementException("This book to profile relation is not exist"));
 
         profileBookRelation.setRelationType(bookRelationTypeRepository
@@ -96,13 +85,12 @@ public class ProfileService {
 
     @Transactional
     public String deleteBookFromProfile(BookToProfileRelationRequest bookToProfileRelationRequest) {
-        Profile profile = getProfileFromBookToProfileRelationRequest(bookToProfileRelationRequest);
-
         Book book = bookRepository.findByIsbn((bookToProfileRelationRequest.getBookIsbn()))
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
 
         ProfileBookRelation profileBookRelation = profileBookRelationRepository
-                .findByProfileAndBookIsbn(profile, book.getIsbn())
+                .findByProfileAndBookIsbn(getProfileFromBookToProfileRelationRequest(bookToProfileRelationRequest),
+                        book.getIsbn())
                 .orElseThrow(() -> new NoSuchElementException("This book to profile relation is not exist"));
 
         profileBookRelationRepository.deleteById(profileBookRelation.getId());
@@ -112,17 +100,7 @@ public class ProfileService {
 
     private Profile getProfileFromBookToProfileRelationRequest(
             BookToProfileRelationRequest bookToProfileRelationRequest) {
-        Set<ConstraintViolation<BookToProfileRelationRequest>> violations =
-                validator.validate(bookToProfileRelationRequest);
-        if (!violations.isEmpty()) {
-            throw new IllegalArgumentException(violations.stream()
-                    .map(ConstraintViolation::getMessage)
-                    .collect(Collectors.joining(", ")));
-        }
-
-        User user = userRepository.findByUsername(bookToProfileRelationRequest.getUsername())
-                .orElseThrow(() -> new NoSuchElementException("User is not exist"));
-
-        return user.getProfile();
+        return userRepository.findByUsername(bookToProfileRelationRequest.getUsername())
+                .orElseThrow(() -> new NoSuchElementException("User is not exist")).getProfile();
     }
 }

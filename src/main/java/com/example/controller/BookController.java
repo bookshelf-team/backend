@@ -3,6 +3,7 @@ package com.example.controller;
 import com.example.model.Book;
 import com.example.payload.request.BookRequest;
 import com.example.service.BookService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -52,31 +53,31 @@ public class BookController {
         return bookService.getBooksByGenres(genres);
     }
 
-    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/add")
-    public String addBook(@RequestBody BookRequest bookRequest) {
+    public String addBook(@Valid @RequestBody BookRequest bookRequest) {
         return bookService.addBook(bookRequest);
     }
 
-    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/id")
-    public Book updateBookById(@RequestParam Long id, @RequestBody BookRequest bookRequest) {
+    public Book updateBookById(@RequestParam Long id, @Valid @RequestBody BookRequest bookRequest) {
         return bookService.updateBookById(id, bookRequest);
     }
 
-    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/isbn")
-    public Book updateBookByIsbn(@RequestParam String isbn, @RequestBody BookRequest bookRequest) {
+    public Book updateBookByIsbn(@RequestParam String isbn, @Valid @RequestBody BookRequest bookRequest) {
         return bookService.updateBookByIsbn(isbn, bookRequest);
     }
 
-    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/delete/id")
     public String deleteBookById(@RequestParam Long id) {
         return bookService.deleteBookById(id);
     }
 
-    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/delete/isbn")
     public String deleteBookByIsbn(@RequestParam String isbn) {
         return bookService.deleteBookByIsbn(isbn);

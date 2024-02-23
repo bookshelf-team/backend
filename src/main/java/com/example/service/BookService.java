@@ -7,8 +7,6 @@ import com.example.payload.request.BookRequest;
 import com.example.repository.BookRepository;
 import com.example.repository.GenreRepository;
 import com.example.repository.UserRepository;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.core.context.SecurityContext;
@@ -18,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -29,8 +26,6 @@ public class BookService {
     private final GenreRepository genreRepository;
 
     private final UserRepository userRepository;
-
-    private final Validator validator;
 
     public List<Book> getAllBooks() {
         return bookRepository.findAll();
@@ -57,11 +52,9 @@ public class BookService {
     }
 
     public List<Book> getBooksByGenre(String genreName) {
-        Genre genre = genreRepository.findByName(EGenre.valueOf("GENRE_" + genreName.toUpperCase()))
+        return bookRepository.findByGenre(genreRepository.findByName(EGenre.valueOf("GENRE_" + genreName.toUpperCase()))
                 .orElseThrow(() -> new NoSuchElementException("Genre is not found: "
-                        + "GENRE_" + genreName.toUpperCase()));
-
-        return bookRepository.findByGenre(genre);
+                        + "GENRE_" + genreName.toUpperCase())));
     }
 
     public List<Book> getBooksByGenres(List<String> genreNames) {
@@ -77,86 +70,39 @@ public class BookService {
 
     @Transactional
     public String addBook(BookRequest bookRequest) {
-        Set<ConstraintViolation<BookRequest>> violations = validator.validate(bookRequest);
-        if (!violations.isEmpty()) {
-            throw new IllegalArgumentException(violations.stream()
-                    .map(ConstraintViolation::getMessage)
-                    .collect(Collectors.joining(", ")));
-        }
-
-        User user = getUserFromSecurityContext(SecurityContextHolder.getContext());
-
         if (bookRepository.existsByIsbn(bookRequest.getIsbn())) {
             throw new ConflictException("ISBN is already taken");
         }
 
         Book bookToSave = new Book();
         copyBookProperties(bookRequest, bookToSave);
-        bookToSave.setAddedByUser(user);
+        bookToSave.setAddedByUser(getUserFromSecurityContext(SecurityContextHolder.getContext()));
         bookRepository.save(bookToSave);
         return "Book added successfully";
     }
 
     @Transactional
     public Book updateBookById(Long id, BookRequest bookRequest) {
-        Set<ConstraintViolation<BookRequest>> violations = validator.validate(bookRequest);
-        if (!violations.isEmpty()) {
-            throw new IllegalArgumentException(violations.stream()
-                    .map(ConstraintViolation::getMessage)
-                    .collect(Collectors.joining(", ")));
-        }
-
-        User user = getUserFromSecurityContext(SecurityContextHolder.getContext());
-
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
 
-        if (!book.getAddedByUser().equals(user) && getUserRoles(SecurityContextHolder.getContext()).contains("USER")) {
-            throw new CustomAccessDeniedException("User doesn't have access to update this book");
-        }
-
-        if (!book.getIsbn().equals(bookRequest.getIsbn()) && bookRepository.existsByIsbn(bookRequest.getIsbn())) {
-            throw new ConflictException("ISBN is already taken");
-        }
-
-        copyBookProperties(bookRequest, book);
-        return bookRepository.save(book);
+        return validateUserPermissions(bookRequest, book);
     }
 
     @Transactional
     public Book updateBookByIsbn(String isbn, BookRequest bookRequest) {
-        Set<ConstraintViolation<BookRequest>> violations = validator.validate(bookRequest);
-        if (!violations.isEmpty()) {
-            throw new IllegalArgumentException(violations.stream()
-                    .map(ConstraintViolation::getMessage)
-                    .collect(Collectors.joining(", ")));
-        }
-
-        User user = getUserFromSecurityContext(SecurityContextHolder.getContext());
-
         Book book = bookRepository.findByIsbn(isbn)
                 .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
 
-        if (!book.getAddedByUser().equals(user) && getUserRoles(SecurityContextHolder.getContext()).contains("USER")) {
-            throw new CustomAccessDeniedException("User doesn't have access to update this book");
-        }
-
-        if (!book.getIsbn().equals(bookRequest.getIsbn()) && bookRepository.existsByIsbn(bookRequest.getIsbn())) {
-            throw new ConflictException("ISBN is already taken");
-        }
-
-        copyBookProperties(bookRequest, book);
-        return bookRepository.save(book);
+        return validateUserPermissions(bookRequest, book);
     }
 
     @Transactional
     public String deleteBookById(Long id) {
-        User user = getUserFromSecurityContext(SecurityContextHolder.getContext());
-
-        Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
-
-        if (!book.getAddedByUser().equals(user) && getUserRoles(SecurityContextHolder.getContext()).contains("ROLE_USER")) {
+        if (!bookRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Book is not exist")).getAddedByUser()
+                .equals(getUserFromSecurityContext(SecurityContextHolder.getContext()))
+                && getUserRoles(SecurityContextHolder.getContext()).contains("ROLE_USER")) {
             throw new CustomAccessDeniedException("User doesn't have access to update this book");
         }
 
@@ -166,12 +112,10 @@ public class BookService {
 
     @Transactional
     public String deleteBookByIsbn(String isbn) {
-        User user = getUserFromSecurityContext(SecurityContextHolder.getContext());
-
-        Book book = bookRepository.findByIsbn(isbn)
-                .orElseThrow(() -> new NoSuchElementException("Book is not exist"));
-
-        if (!book.getAddedByUser().equals(user) && getUserRoles(SecurityContextHolder.getContext()).contains("USER")) {
+        if (!bookRepository.findByIsbn(isbn)
+                .orElseThrow(() -> new NoSuchElementException("Book is not exist")).getAddedByUser()
+                .equals(getUserFromSecurityContext(SecurityContextHolder.getContext()))
+                && getUserRoles(SecurityContextHolder.getContext()).contains("USER")) {
             throw new CustomAccessDeniedException("User doesn't have access to update this book");
         }
 
@@ -192,7 +136,6 @@ public class BookService {
     }
 
     private void copyBookProperties(BookRequest bookRequest, Book book) {
-
         BeanUtils.copyProperties(bookRequest, book, "id", "genres", "profileBookRelations");
 
         Set<Genre> genres = new HashSet<>();
@@ -203,5 +146,19 @@ public class BookService {
         }
 
         book.setGenres(genres);
+    }
+
+    private Book validateUserPermissions(BookRequest bookRequest, Book book) {
+        if (!book.getAddedByUser().equals(getUserFromSecurityContext(SecurityContextHolder.getContext()))
+                && getUserRoles(SecurityContextHolder.getContext()).contains("USER")) {
+            throw new CustomAccessDeniedException("User doesn't have access to update this book");
+        }
+
+        if (!book.getIsbn().equals(bookRequest.getIsbn()) && bookRepository.existsByIsbn(bookRequest.getIsbn())) {
+            throw new ConflictException("ISBN is already taken");
+        }
+
+        copyBookProperties(bookRequest, book);
+        return bookRepository.save(book);
     }
 }

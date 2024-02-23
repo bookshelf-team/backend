@@ -3,6 +3,7 @@ package com.example.controller;
 import com.example.model.Profile;
 import com.example.payload.request.BookToProfileRelationRequest;
 import com.example.service.ProfileService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -29,14 +30,14 @@ public class ProfileController {
 
     @PreAuthorize("(#username == authentication.name and hasRole('USER')) or hasRole('MODERATOR') or hasRole('ADMIN')")
     @PostMapping("/{username}")
-    public Profile updateProfileByUsername(@PathVariable String username, @RequestBody Profile profileRequest) {
+    public Profile updateProfileByUsername(@PathVariable String username, @Valid @RequestBody Profile profileRequest) {
         return profileService.updateProfileByUsername(username, profileRequest);
     }
 
     @PreAuthorize("(#bookToProfileRelationRequest.username == authentication.name and hasRole('USER')) "
             + "or hasRole('MODERATOR') or hasRole('ADMIN')")
     @PostMapping("/book/add")
-    public String addBookToProfile(@RequestBody BookToProfileRelationRequest bookToProfileRelationRequest) {
+    public String addBookToProfile(@Valid @RequestBody BookToProfileRelationRequest bookToProfileRelationRequest) {
         return profileService.addBookToProfile(bookToProfileRelationRequest);
     }
 
@@ -44,14 +45,14 @@ public class ProfileController {
             + "or hasRole('MODERATOR') or hasRole('ADMIN')")
     @PostMapping("/book/update")
     public String changeBookFromProfileRelationType(
-            @RequestBody BookToProfileRelationRequest bookToProfileRelationRequest) {
+            @Valid @RequestBody BookToProfileRelationRequest bookToProfileRelationRequest) {
         return profileService.changeBookFromProfileRelationType(bookToProfileRelationRequest);
     }
 
     @PreAuthorize("(#bookToProfileRelationRequest.username == authentication.name and hasRole('USER')) "
             + "or hasRole('MODERATOR') or hasRole('ADMIN')")
     @DeleteMapping("/book/delete")
-    public String deleteBookFromProfile(@RequestBody BookToProfileRelationRequest bookToProfileRelationRequest) {
+    public String deleteBookFromProfile(@Valid @RequestBody BookToProfileRelationRequest bookToProfileRelationRequest) {
         return profileService.deleteBookFromProfile(bookToProfileRelationRequest);
     }
 }
