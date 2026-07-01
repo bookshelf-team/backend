@@ -1,3 +1,2 @@
-# Backend of internship project in InterLink LLC
-
+# Backend of part-time startup project
 ---
